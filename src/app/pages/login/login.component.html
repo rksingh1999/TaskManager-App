@@ -1,0 +1,25 @@
+<div class="mat-app-background mat-typography login-container">
+  <mat-card class="login-card">
+    <div class="card-header">
+      <h2 class="login-title">Welcome Back!</h2>
+      <p class="login-subtitle">Please enter your credentials to continue</p>
+    </div>
+
+    <form [formGroup]="form" class="example-form" (ngSubmit)="onSubmit()">
+        <div class="input-group mb-3">
+          <input type="text" class="form-control" placeholder="Username" aria-label="User Name" aria-describedby="basic-addon1" formControlName="username">
+          <span class="input-group-text" id="basic-addon1">&#64;</span>
+        </div>
+        <div class="input-group mb-3">
+          <input [type]="showPassword ? 'text' : 'password'" class="form-control" placeholder="Password" formControlName="password">
+          <button type="button" class="input-group-text" (click)="showPassword = !showPassword">
+            <i class="bi" [ngClass]="showPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
+          </button>
+        </div>
+        <div style="text-align: center;">
+          <button type="submit" class="btn " style="background-color: lightseagreen;color: white;" [disabled]="form.invalid">Login</button>
+        </div>
+      
+    </form>
+  </mat-card>
+</div>

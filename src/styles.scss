@@ -1,0 +1,61 @@
+/* You can add global styles to this file, and also import other style files */
+@use '@angular/material' as mat;
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+body.light-theme {
+   
+    .welcome {
+        background-color: lightseagreen;
+        color: #fff !important;
+        border-color: lightseagreen; 
+      }
+      .bgColor {
+        background-color: lightseagreen;
+        color: #fff !important;
+        border-color: lightseagreen; 
+      }
+  }
+   
+  body.dark-theme {
+    .welcome {
+        background-color: #f1baba;
+        color: #333 !important;
+         border-color: #f1baba; 
+      }
+      .bgColor {
+        background-color: #f1baba;
+        color: #333 !important;
+        border-color: #f1baba; 
+       
+      }
+      
+  }
+ 
+$light-theme: mat.define-light-theme((
+  color: (
+    primary: mat.define-palette(mat.$indigo-palette),
+    accent: mat.define-palette(mat.$pink-palette),
+  ),
+  typography: mat.define-typography-config(),
+  density: 0
+));
+ 
+$dark-theme: mat.define-dark-theme((
+  color: (
+    primary: mat.define-palette(mat.$deep-purple-palette),
+    accent: mat.define-palette(mat.$amber-palette),
+  ),
+  typography: mat.define-typography-config(),
+  density: 0
+));
+ 
+// Apply themes only when the body has the correct class
+body.light-theme {
+  @include mat.all-component-themes($light-theme);
+}
+ 
+body.dark-theme {
+  @include mat.all-component-themes($dark-theme);
+}
+ 

@@ -1,0 +1,49 @@
+<nav class="navbar navbar d-lg-none bgColor" >
+    <div class="container-fluid">
+      <a class="navbar-brand" style="color: white;" href="#">Role : {{authService.getUserDetail()?.role}}</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileSidebar">
+        <span style="color: white;" class="navbar-toggler-icon"></span>
+      </button>
+    </div>
+  </nav>
+  
+  <div class="offcanvas offcanvas-start text-white d-lg-none bgColor" tabindex="-1" id="mobileSidebar">
+    <div class="offcanvas-header">
+      <h5 class="offcanvas-title">Role: {{authService.getUserDetail()?.role}}</h5>
+      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+    </div>
+    <div class="offcanvas-body">
+      <nav class="nav flex-column">
+        <a class="nav-link bgColor" href="#">Dashboard</a>
+      </nav>
+    </div>
+  </div>
+  
+  <div class="sidebar d-none d-lg-flex flex-column bgColor">
+    <h4 class="mb-2">Role: {{authService.getUserDetail()?.role}}</h4>
+    <div style="border: 1px solid;"></div>
+    <nav class="nav flex-column">
+      <a class="nav-link bgColor" href="#">Dashboard</a>
+    
+    </nav>
+  </div>
+  
+  <div class="welcome">
+    <div></div>
+    <div>
+      Welcome to<span class="text-5xl text-green-800">Task Manager App</span>
+    </div>
+    <div style="display: flex;">
+      <div style="font-size: large;cursor: pointer;" (click)="logout()">Log out</div>
+      <div style="font-size: large;cursor: pointer;margin-left: 10px;" (click)="toggleTheme()">Theme</div>
+    </div>
+
+  </div>
+
+  <div class="main-content">
+   
+    <router-outlet></router-outlet>
+  
+   </div>
+  
+  

@@ -1,8 +1,17 @@
 import { ApplicationConfig } from '@angular/core';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
+
+// import { provideToastr } from 'ngx-toastr';
+import { routes } from './app.routes';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+import { tokenInterceptor } from './interceptor/token.interceptor';
 import { provideRouter } from '@angular/router';
 
-import { routes } from './app.routes';
-
 export const appConfig: ApplicationConfig = {
-  providers: [provideRouter(routes)]
+  providers: [
+    provideRouter(routes),
+    provideHttpClient(withInterceptors([tokenInterceptor])),
+    provideAnimationsAsync(), provideAnimationsAsync(), provideAnimationsAsync(),
+    // provideToastr(),
+  ],
 };
