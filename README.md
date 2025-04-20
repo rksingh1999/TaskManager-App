@@ -1,28 +1,39 @@
-# TaskManagerApp
+ Task Management App
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 17.3.10.
+A lightweight Task Management application built with Angular Standalone Components, Bootstrap and Angular Material, and a backend API for user authentication and task handling. The system supports two types of users: Admin and User. Admins can assign tasks; Users can view and manage their own.
 
-## Development server
+---
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
 
-## Code scaffolding
+ Features Implemented
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+1. Login with JWT Authentication (Admin / User)
+2. Role-based access control
+3. Task creation & assignment
+4. Task filtering by title, status, date, etc.
+5. Angular Signals & Reactive Forms
+6. Angular Material (UI components)
+7. Accordion layout for task list and form
+8. Reusable components
+9. Responsive design
 
-## Build
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+ Credentials
 
-## Running unit tests
+| Role  | UserId               | Password  |
+|-------|----------------------|-----------|
+| Admin | admin                | admin123  |
+| User  | user1                | user123   |
+| User  | user2                | user123   |
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+ Setup Instructions
 
-## Running end-to-end tests
+1. Need to install Dependencies 
+   => npm install
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+2. Need To Install Angular 
+ => ng add @angular/material
 
-## Further help
+3. Need To Install for Jwt Decode 
+ => npm install jwt-decode
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
-"# Task Manager Angular App" 
