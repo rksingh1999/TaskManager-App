@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, Inject, OnInit, inject } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { FormGroup} from '@angular/forms';
 import { Validators } from '@angular/forms';
@@ -29,13 +29,12 @@ import { MatCard } from '@angular/material/card';
   
 })
 export class LoginComponent implements OnInit {
+  authService = inject(AuthService)
   hide = true;
   form!: FormGroup;
-  
   showPassword = false;
 
   constructor(
-    private authService: AuthService,
     private fb: FormBuilder,
     private router: Router,
   ) {

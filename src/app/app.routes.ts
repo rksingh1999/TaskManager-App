@@ -3,6 +3,7 @@ import { MaincomponentComponent } from './pages/maincomponent/maincomponent.comp
 import { AuthGuard } from './guards/auth.guard';
 import { HomeComponent } from './pages/home/home.component';
 import { LoginComponent } from './pages/login/login.component';
+import { TaskTableComponent } from './pages/task-table/task-table.component';
 
 export const routes: Routes = [
   {
@@ -12,6 +13,7 @@ export const routes: Routes = [
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: HomeComponent },
+      { path: 'taskTable', component: TaskTableComponent}
     ]
   },
   { path: 'login', component: LoginComponent },

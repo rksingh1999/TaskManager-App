@@ -14,14 +14,16 @@ import { ThemeService } from '../../services/theme.service';
 })
 export class MaincomponentComponent {
  authService = inject(AuthService);
+ themeService = inject(ThemeService);
 
- constructor( private router: Router,public themeService: ThemeService){}
+ constructor( private router: Router){}
  
  toggleTheme(): void {
    this.themeService.toggleTheme();
  }
  logout(){
   this.authService.logout();
+  localStorage.removeItem('token');
   this.router.navigate(['login'])
  }
 }

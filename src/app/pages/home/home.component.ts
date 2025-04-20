@@ -1,44 +1,54 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject, signal, Signal } from '@angular/core';
 import { AuthService } from '../../services/auth.service';
 import { RouterLink } from '@angular/router';
 import {
   FormBuilder,
+  FormControl,
   FormGroup,
   FormsModule,
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { CommonModule, JsonPipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { MatCard } from '@angular/material/card';
 import { TaskService } from '../../services/task.service';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { Role, Task } from '../../interfaces/task-interface';
+import { TaskTableComponent } from '../task-table/task-table.component';
 
 @Component({
   selector: 'app-home',
   standalone: true,
   imports: [
+    MatSnackBarModule,
     CommonModule,
     RouterLink,
     ReactiveFormsModule,
     FormsModule,
     MatCard,
+    TaskTableComponent
   ],
   templateUrl: './home.component.html',
-  styleUrls: ['./home.component.css'], 
+  styleUrls: ['./home.component.css'],
 })
 export class HomeComponent {
   authService = inject(AuthService);
   taskService = inject(TaskService);
   loggedinUserDetails = this.authService.getUserDetail();
   form!: FormGroup;
-  isEdit: boolean = false;
+  tableData = signal<Task[]>([]);
+  sendTaskList= signal<Task[]>([]);
+  filterType = signal<string>('');
+  isEdit = signal(false);
+  isUserDisabled = signal(true);
+  isSecondAccordionOpen = signal(false);
   rowData: any = '';
-  isUserDisabled = true;
-  tableData = [
-  ];
-  isSecondAccordionOpen = false;
-  userList:Role[] = [];
-  selectedRoleId!:Role;
-  tableHeaders: (keyof (typeof this.tableData)[number])[] = [
+  userList: Role[] = [];
+  selectedRoleId!: Role;
+  minDate: string = '';
+  statusOptions = ['Pending', 'InProgress', 'Done'];
+
+  tableHeaders: (keyof Task)[] = [
     'title',
     'description',
     'status',
@@ -46,17 +56,15 @@ export class HomeComponent {
     'assigneeName',
   ];
 
-  statusOptions= ['Pending' , 'InProgress' , 'Done']
-  filters: string[] = ['', '', ''];
 
-  filteredData = [...this.tableData];
-
-  constructor(private fb: FormBuilder) {}
+  constructor(private fb: FormBuilder,private snackBar: MatSnackBar) {}
 
   ngOnInit() {
-    this.filteredData = this.tableData;
+    const today = new Date();
+    this.minDate = today.toISOString().split('T')[0];
     this.getAllTask();
     this.getUserList();
+
     this.form = this.fb.group({
       title: ['', Validators.required],
       discription: ['', Validators.required],
@@ -65,166 +73,166 @@ export class HomeComponent {
       assignTo: [
         {
           value: this.getDefaultAssignedUser(),
-          disabled: this.isUserDisabled
+          disabled: this.isUserDisabled(),
         },
-        Validators.required
-      ]  
+        Validators.required,
+      ],
     });
-  this.filters = new Array(this.tableHeaders.length).fill('');
 
   }
-  panelState = {
-    taskList: true,
-    addEditTask: false,
-  };
+
+  get title() {
+    return this.form.get('title');
+  }
+  
+  receiveTaskForAction=(task?: Task,action?:string) => {
+    console.log("received from child",task, action);
+    if(action == 'edit'){
+      this.editRow(task);
+    }
+    if(action =='delete'){
+      this.deleteRow(task);
+    }
+    if(action =='add'){
+      this.isSecondAccordionOpen.set(true);
+    }
+  }
+
   getDefaultAssignedUser(): any {
-    this.getUserList();
     if (this.loggedinUserDetails?.role !== 'Admin') {
-      return this.userList.find(x => x.id === this.loggedinUserDetails?.id) || null;
+      return (
+        this.userList.find((x) => x.id === this.loggedinUserDetails?.id) || null
+      );
     }
     return null;
   }
+
   getAllTask() {
-    this.filteredData= [];
-    var id = '';
-    if(this.loggedinUserDetails?.role != 'Admin'){
+    let id = '';
+    if (this.loggedinUserDetails?.role !== 'Admin') {
       id = this.loggedinUserDetails?.id;
-      this.isUserDisabled = true;
-    }else{
-      this.isUserDisabled = false;
+      this.isUserDisabled.set(true);
+    } else {
+      this.isUserDisabled.set(false);
     }
-    
+
     this.taskService.getAllTask(id).subscribe({
       next: (taskList) => {
-        this.tableData = taskList;
-        console.log('task List', taskList,this.tableData);
-        this.filteredData = [...this.tableData];
-
+        this.tableData.set(taskList);
+        this.sendTaskList.set(taskList);
       },
       error: (error) => {},
     });
   }
 
-  getUserList(){
+  getUserList() {
     this.authService.getUserList().subscribe({
-      next: (users) =>{
+      next: (users) => {
         this.userList = users;
         this.form.patchValue({
-            "assignTo": this.userList.filter(x => x.id === this.loggedinUserDetails?.id)[0].id,
-          })
-        console.log('user lisr',this.userList)
+          assignTo: this.userList.find(
+            (x) => x.id === this.loggedinUserDetails?.id
+          )?.id,
+        });
       },
-      error: (error) => {
-
-      }
-    })
-  }
-  onSubmit(): void {
-    this.isSecondAccordionOpen = false;
-    if (this.form.valid) {
-      const payload = {
-        "title": this.form.value.title,
-        "description": this.form.value.discription,
-        "status": this.form.value.status,
-        "dueDate": this.form.value.dueDate,
-        "assignedTo": this.loggedinUserDetails?.role == 'User' ? this.loggedinUserDetails.id : this.form.value.assignTo,
-        "assignedBy": this.loggedinUserDetails?.id,
-        "assigneeName": this.loggedinUserDetails?.role == 'User' ? this.loggedinUserDetails.fullName : this.userList?.filter((x) => x.id == this.form.value.assignTo)[0].userName
-      }
-      if( !this.isEdit){
-      this.taskService.addTask(payload).subscribe({
-        next: (response) => {
-          console.log('logged in details', response);
-          this.getAllTask();
-          this.isEdit = false;
-          this.isSecondAccordionOpen = false;
-          this.form.reset();
-          this.form.patchValue({
-            "assignTo": this.userList.filter(x => x.id === this.loggedinUserDetails?.id)[0].id,
-          })
-        },
-        error: (error) => {},
-      });
-    }else {
-      const payload = {
-        "title": this.form.value.title,
-        "description": this.form.value.discription,
-        "status": this.form.value.status,
-        "dueDate": this.form.value.dueDate,
-        "assignedTo": this.loggedinUserDetails?.role == 'User' ? this.loggedinUserDetails.id : this.form.value.assignTo,
-        "assignedBy": this.loggedinUserDetails?.id,
-        "assigneeName": this.loggedinUserDetails?.role == 'User' ? this.loggedinUserDetails.fullName : this.userList?.filter((x) => x.id == this.form.value.assignTo)[0].userName,
-        "id": this.rowData.id,
-      }
-      this.taskService.updateTask(this.rowData.id,payload).subscribe({
-        next: (response) => {
-          this.getAllTask();
-          this.isEdit = false;
-          this.isSecondAccordionOpen = false;
-          this.form.reset();
-        },
-        error: (error) => {},
-      });
-    }
-      const credentials = this.form.value;
-
-      console.log('Login Credentials:', credentials);
-    }
-  }
-  openAddPanel() {
-    this.panelState.taskList = false;
-    this.panelState.addEditTask = true;
-  }
-
-  applyFilter() {
-    const hasFilter = this.filters.some(f => f && f.trim() !== '');
-  
-    if (!hasFilter) {
-      this.filteredData = [...this.tableData];
-      return;
-    }
-  
-    this.filteredData = this.tableData.filter(row => {
-      return this.tableHeaders.every((header, i) => {
-        const filterValue = this.filters[i]?.toLowerCase().trim() || '';
-        const rowValue = row[header] ? String(row[header]).toLowerCase() : '';
-        return !filterValue || rowValue.includes(filterValue);
-      });
+      error: () => {},
     });
+  }
+
+  onSubmit(): void {
+    if (this.form.valid) {
+      const isUser = this.loggedinUserDetails?.role === 'User';
+      const payload: any = {
+        title: this.form.value.title,
+        description: this.form.value.discription,
+        status: this.form.value.status,
+        dueDate: this.form.value.dueDate,
+        assignedTo: isUser
+          ? this.loggedinUserDetails?.id
+          : this.form.value.assignTo,
+        assignedBy: this.loggedinUserDetails?.id,
+        assigneeName: isUser
+          ? this.loggedinUserDetails?.fullName
+          : this.userList.find((x) => x.id === this.form.value.assignTo)
+              ?.userName,
+      };
+
+      if (!this.isEdit()) {
+        this.taskService.addTask(payload).subscribe({
+          next: () => {
+            this.snackBar.open('Record saved successfully!', 'Close', {
+              duration: 3000,
+              horizontalPosition: 'right',
+              verticalPosition: 'top',
+            });
+            this.isSecondAccordionOpen.set(false);
+            this.getAllTask();
+            this.isEdit.set(false);
+            this.form.reset();
+            this.form.patchValue({
+              assignTo: this.userList.find(
+                (x) => x.id === this.loggedinUserDetails?.id
+              )?.id,
+            });
+          },
+          error(err) {
+            
+          },
+        });
+      } else {
+        payload.id = this.rowData.id;
+        this.taskService.updateTask(this.rowData.id, payload).subscribe({
+          next: () => {
+            this.snackBar.open('Record Updated successfully!', 'Close', {
+              duration: 3000,
+              horizontalPosition: 'right',
+              verticalPosition: 'top',
+            });
+            this.isSecondAccordionOpen.set(false);
+            this.getAllTask();
+            this.isEdit.set(false);
+            this.form.reset();
+          },
+        });
+      }
+    }
   }
 
   editRow(row: any) {
-    this.isEdit = true;
+    this.isEdit.set(true);
     this.rowData = row;
-    this.isSecondAccordionOpen = true;
-    this.selectedRoleId = this.userList.filter((x)=>x.id == row.assignedTo)[0];
+    this.isSecondAccordionOpen.set(true);
+    this.selectedRoleId = this.userList.find((x) => x.id === row.assignedTo)!;
     this.form.patchValue({
-      "title": row.title,
-      "discription": row.description,
-      "status": row.status,
-      "dueDate": row.dueDate,
-      "assignTo": row.assignedTo,
-      "assignedBy": row?.assignedBy,
-      "assigneeName": row.assigneeName
-    })
+      title: row.title,
+      discription: row.description,
+      status: row.status,
+      dueDate: row.dueDate,
+      assignTo: row.assignedTo,
+      assignedBy: row?.assignedBy,
+      assigneeName: row.assigneeName,
+    });
   }
-  addTask() {
-    this.isSecondAccordionOpen = true;
-    console.log('Edit row:');
-  }
+
   onCancel() {
-    this.isSecondAccordionOpen = false;
+    this.isSecondAccordionOpen.set(false);
   }
+
   deleteRow(row: any) {
     this.taskService.deleteTask(row.id).subscribe({
-      next: (response) => {
-        this.getAllTask();
+      next: (data) => {
+        this.snackBar.open('Record Deleted successfully!', 'Close', {
+          duration: 3000,
+          horizontalPosition: 'right',
+          verticalPosition: 'top',
+        });
+        this.getAllTask()
       },
-      error: (error) => {},
+      error(err) {
+        
+      },
     });
   }
 }
-interface Role {
-  id: string;
-  userName: string;
-}
+
+
