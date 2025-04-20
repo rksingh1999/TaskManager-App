@@ -21,6 +21,9 @@ export class MaincomponentComponent {
  toggleTheme(): void {
    this.themeService.toggleTheme();
  }
+ gotoHome(){
+  this.router.navigate(['home/dashboard'])
+ }
  logout(){
   this.authService.logout();
   localStorage.removeItem('token');

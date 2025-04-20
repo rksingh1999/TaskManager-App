@@ -12,8 +12,8 @@ export const routes: Routes = [
     canActivate: [AuthGuard],
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-      { path: 'dashboard', component: HomeComponent },
-      { path: 'taskTable', component: TaskTableComponent}
+      { path: 'dashboard', component: HomeComponent ,canActivate: [AuthGuard],},
+      { path: 'taskTable', component: TaskTableComponent,canActivate: [AuthGuard],}
     ]
   },
   { path: 'login', component: LoginComponent },
